@@ -1,0 +1,31 @@
+# Node / frontend
+node_modules/
+dist/
+build/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+
+# Java / Maven
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# Playwright
+frontend/playwright-report/
+frontend/test-results/
+
+# Docker
+.env

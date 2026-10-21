@@ -1,0 +1,40 @@
+# 用法：
+#   1) docker compose up -d                      # 先拉中间件（PostgreSQL、RocketMQ、Nacos、Redis）
+#   2) mvn clean package -Dmaven.test.skip=true  # 本地打包
+#   3) docker compose -f docker-compose.app.yml up -d --build
+services:
+  gateway:
+    build: ./taskify-gateway
+    network_mode: host
+    environment:
+      - NACOS_ADDR=localhost:8848
+      - CORS_ORIGIN=http://localhost:5173
+      - JWT_SECRET=change-me-in-production-please-use-a-long-random-string
+    depends_on:
+      - auth
+      - example
+
+  auth:
+    build: ./taskify-auth
+    network_mode: host
+    environment:
+      - NACOS_ADDR=localhost:8848
+      - POSTGRES_ADDR=localhost:5432
+      - POSTGRES_USER=taskify
+      - POSTGRES_PASSWORD=taskify
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      - JWT_SECRET=change-me-in-production-please-use-a-long-random-string
+
+  example:
+    build: ./taskify-example
+    network_mode: host
+    environment:
+      - NACOS_ADDR=localhost:8848
+      - POSTGRES_ADDR=localhost:5432
+      - POSTGRES_USER=taskify
+      - POSTGRES_PASSWORD=taskify
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      - ROCKETMQ_ADDR=localhost:9876
+      - JWT_SECRET=change-me-in-production-please-use-a-long-random-string
