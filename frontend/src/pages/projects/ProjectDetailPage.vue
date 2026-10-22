@@ -7,6 +7,7 @@ import { taskApi, type Task, type TaskStatus } from '@/services/taskApi'
 import { useTasks } from '@/stores/tasks'
 import { useUsers } from '@/stores/users'
 import { STATUS_LABELS, STATUS_ORDER } from '@/services/taskStatus'
+import { formatTaskTime } from '@/services/taskTime'
 import { useToast } from '@/composables/useToast'
 import KanbanBoard from '@/components/board/KanbanBoard.vue'
 import KanbanColumn from '@/components/board/KanbanColumn.vue'
@@ -166,7 +167,11 @@ async function createTask() {
         <div v-for="t in tasks" :key="t.id" class="flex items-center justify-between rounded-md border p-3">
           <div>
             <p class="font-medium">{{ t.title }}</p>
-            <p class="text-xs text-muted-foreground">{{ STATUS_LABELS[t.status] }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ STATUS_LABELS[t.status] }}
+              <span v-if="t.blocked" class="ml-2 text-amber-600">被阻塞</span>
+            </p>
+            <p v-if="t.dueAt" class="text-xs text-muted-foreground">截止：{{ formatTaskTime(t.dueAt, t.dueAllDay) }}</p>
           </div>
           <button class="text-sm text-primary" @click="openTask(t)">详情</button>
         </div>

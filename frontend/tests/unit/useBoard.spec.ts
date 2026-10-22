@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ move: vi.fn(), upsert: vi.fn(), push: vi.fn() }))
+const mocks = vi.hoisted(() => ({ move: vi.fn(), upsert: vi.fn(), reload: vi.fn(), push: vi.fn() }))
 
 vi.mock('@/services/taskApi', () => ({
   taskApi: { move: mocks.move },
 }))
-vi.mock('@/stores/tasks', () => ({ useTasks: () => ({ upsert: mocks.upsert }) }))
+vi.mock('@/stores/tasks', () => ({ useTasks: () => ({ upsert: mocks.upsert, reload: mocks.reload }) }))
 vi.mock('@/composables/useToast', () => ({ useToast: () => ({ push: mocks.push }) }))
 
 import { useBoard } from '@/composables/useBoard'
@@ -19,6 +19,12 @@ const task: Task = {
   assigneeId: null,
   status: 'TODO',
   createdBy: 'u',
+  startAt: null,
+  startAllDay: false,
+  dueAt: null,
+  dueAllDay: false,
+  blocked: false,
+  blockerIds: [],
   createdAt: '',
   updatedAt: '',
 }
@@ -27,6 +33,7 @@ describe('useBoard.moveTask', () => {
   beforeEach(() => {
     mocks.move.mockReset()
     mocks.upsert.mockReset()
+    mocks.reload.mockReset()
     mocks.push.mockReset()
   })
 
@@ -47,5 +54,32 @@ describe('useBoard.moveTask', () => {
     expect(mocks.upsert).toHaveBeenCalledWith({ ...task, status: 'DONE' })
     expect(mocks.upsert).toHaveBeenCalledWith({ ...task, status: 'TODO' })
     expect(mocks.push).toHaveBeenCalled()
+  })
+
+  it('被阻塞任务不允许向前推进，并触发回弹重算', async () => {
+    const blockedTask: Task = { ...task, blocked: true }
+    const { moveTask } = useBoard()
+    const ok = await moveTask(blockedTask, 'IN_PROGRESS')
+    expect(ok).toBe(false)
+    expect(mocks.move).not.toHaveBeenCalled()
+    expect(mocks.push).toHaveBeenCalled()
+    expect(mocks.upsert).toHaveBeenCalledWith({ ...blockedTask })
+  })
+
+  it('被阻塞任务允许回退', async () => {
+    const blockedInProgress: Task = { ...task, status: 'IN_PROGRESS', blocked: true }
+    mocks.move.mockResolvedValue({ ...blockedInProgress, status: 'TODO' })
+    const { moveTask } = useBoard()
+    const ok = await moveTask(blockedInProgress, 'TODO')
+    expect(ok).toBe(true)
+    expect(mocks.move).toHaveBeenCalledWith(blockedInProgress.id, 'TODO')
+  })
+
+  it('进入/离开已完成时刷新列表', async () => {
+    mocks.move.mockResolvedValue({ ...task, status: 'DONE' })
+    const { moveTask } = useBoard()
+    const ok = await moveTask(task, 'DONE')
+    expect(ok).toBe(true)
+    expect(mocks.reload).toHaveBeenCalled()
   })
 })

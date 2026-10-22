@@ -27,7 +27,7 @@ spring:
             - id: project
               uri: lb://taskify-project
               predicates:
-                - Path=/api/v1/projects/**, /api/v1/tasks/**, /api/v1/comments/**
+                - Path=/api/v1/projects/**, /api/v1/tasks/**, /api/v1/comments/**, /api/v1/reminders/**
             - id: notification
               uri: lb://taskify-notification
               predicates:
@@ -42,6 +42,7 @@ spring:
                   - POST
                   - PUT
                   - DELETE
+                  - PATCH
                 allowed-headers: "*"
 
 taskify:

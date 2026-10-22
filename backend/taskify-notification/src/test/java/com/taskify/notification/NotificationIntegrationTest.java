@@ -93,6 +93,22 @@ class NotificationIntegrationTest {
         assertThat(unreadCount("pm_user")).isEqualTo(1);
     }
 
+    @Test
+    void blockUnblockAndReminderNotifyAssignee() {
+        // 被阻塞 → 负责人收到 TASK_BLOCKED
+        notificationService.handle(new TaskEvent("TASK_BLOCKED", "t2", "p1", "任务标题", "engineer1", "pm_user", null));
+        assertThat(unreadCount("engineer1")).isEqualTo(1);
+        assertThat(unreadCount("pm_user")).isEqualTo(0);
+
+        // 解除阻塞 → 负责人收到 TASK_UNBLOCKED
+        notificationService.handle(new TaskEvent("TASK_UNBLOCKED", "t2", "p1", "任务标题", "engineer1", "pm_user", null));
+        assertThat(unreadCount("engineer1")).isEqualTo(2);
+
+        // 提醒 → 负责人收到 REMINDER
+        notificationService.handle(new TaskEvent("REMINDER", "t2", "p1", "任务标题", "engineer1", "pm_user", null));
+        assertThat(unreadCount("engineer1")).isEqualTo(3);
+    }
+
     private long unreadCount(String userId) {
         ResponseEntity<JsonNode> res = rest.exchange("/api/v1/notifications/unread-count", HttpMethod.GET,
                 new HttpEntity<>(userHeaders(userId)), JsonNode.class);

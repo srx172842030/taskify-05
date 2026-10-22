@@ -14,7 +14,13 @@ vi.mock('@/services/taskApi', () => ({
 vi.mock('@/services/commentApi', () => ({
   commentApi: { list: vi.fn().mockResolvedValue({ items: [], page: 1, size: 50, total: 0, totalPages: 0 }), create: vi.fn(), update: vi.fn(), remove: vi.fn() },
 }))
-vi.mock('@/stores/tasks', () => ({ useTasks: () => ({ upsert: mocks.upsert }) }))
+vi.mock('@/services/reminderApi', () => ({
+  reminderApi: { list: vi.fn().mockResolvedValue([]), create: vi.fn(), delete: vi.fn() },
+}))
+vi.mock('@/services/dependencyApi', () => ({
+  dependencyApi: { list: vi.fn().mockResolvedValue({ blockers: [], dependents: [] }), create: vi.fn(), remove: vi.fn() },
+}))
+vi.mock('@/stores/tasks', () => ({ useTasks: () => ({ upsert: mocks.upsert, tasks: ref([]) }) }))
 vi.mock('@/stores/users', () => ({ useUsers: () => ({ users: [], byId: {} }) }))
 vi.mock('@/stores/auth', () => ({ useAuth: () => ({ user: ref(null) }) }))
 vi.mock('@/composables/useBoard', () => ({ useBoard: () => ({ moveTask: vi.fn() }) }))
@@ -31,6 +37,12 @@ const task: Task = {
   assigneeId: null,
   status: 'TODO',
   createdBy: 'u',
+  startAt: null,
+  startAllDay: false,
+  dueAt: null,
+  dueAllDay: false,
+  blocked: false,
+  blockerIds: [],
   createdAt: '',
   updatedAt: '',
 }
@@ -53,5 +65,12 @@ describe('TaskDetailDrawer', () => {
 
     expect(mocks.update).not.toHaveBeenCalled()
     expect(mocks.push).toHaveBeenCalledWith('标题不能为空', 'error')
+  })
+
+  it('渲染开始/截止时间与全天选项', () => {
+    const wrapper = mount(TaskDetailDrawer, { props: { task, modelValue: true } })
+    expect(wrapper.text()).toContain('开始时间')
+    expect(wrapper.text()).toContain('截止时间')
+    expect(wrapper.text()).toContain('全天')
   })
 })

@@ -6,5 +6,8 @@ package com.taskify.notification.entity;
 public enum NotificationType {
     TASK_CREATED,
     TASK_UPDATED,
-    KANBAN_MOVED
+    KANBAN_MOVED,
+    REMINDER,
+    TASK_BLOCKED,
+    TASK_UNBLOCKED
 }

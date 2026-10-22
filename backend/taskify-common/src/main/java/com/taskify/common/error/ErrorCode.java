@@ -13,6 +13,7 @@ public enum ErrorCode {
     FORBIDDEN(403),
     NOT_FOUND(404),
     CONFLICT(409),
+    TASK_BLOCKED(409),
     RATE_LIMITED(429),
     SERVER_ERROR(500);
 

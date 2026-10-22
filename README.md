@@ -4,6 +4,8 @@
 
 第二阶段（`002-taskify-core`）：核心协作功能——项目、任务、看板（四列拖拽）、评论与实时通知（SSE）。
 
+第三阶段（`003-task-scheduling-dependencies`）：任务时间与依赖——独立的开始/截止时间（全天/具体时刻）、多提醒节点（绝对时间点/相对提前量）、硬阻塞依赖关系（被依赖未完成时阻止开始并通知）。
+
 ## 结构
 
 - `frontend/` — Vue 3 + TypeScript（strict）+ Tailwind CSS + shadcn-vue + vue-draggable-plus

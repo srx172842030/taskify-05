@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { notificationApi, type Notification } from '@/services/notificationApi'
+import { useTasks } from '@/stores/tasks'
 
 const notifications = ref<Notification[]>([])
 const unread = ref(0)
@@ -42,7 +43,12 @@ function connectStream() {
   source = new EventSource(`/api/v1/notifications/stream?token=${encodeURIComponent(token)}`)
   source.addEventListener('notification', (e: MessageEvent) => {
     try {
-      prepend(JSON.parse(e.data) as Notification)
+      const n = JSON.parse(e.data) as Notification
+      prepend(n)
+      // 阻塞状态变化时刷新看板，使「被阻塞」标记实时更新
+      if (n.type === 'TASK_BLOCKED' || n.type === 'TASK_UNBLOCKED') {
+        void useTasks().reload()
+      }
     } catch {
       // 忽略无法解析的事件
     }

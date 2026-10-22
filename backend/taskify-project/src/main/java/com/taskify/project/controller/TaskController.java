@@ -33,8 +33,9 @@ public class TaskController {
     public ApiResponse<TaskResponse> create(@RequestHeader(value = "X-User-Id", required = false) String userId,
                                             @PathVariable String projectId,
                                             @Valid @RequestBody CreateTaskRequest req) {
-        return ApiResponse.ok(TaskResponse.from(taskService.create(
-                requireUser(userId), projectId, req.title(), req.description(), req.assigneeId())));
+        return ApiResponse.ok(toResponse(taskService.create(
+                requireUser(userId), projectId, req.title(), req.description(), req.assigneeId(),
+                req.startAt(), req.startAllDay(), req.dueAt(), req.dueAllDay())));
     }
 
     @GetMapping("/projects/{projectId}/tasks")
@@ -47,7 +48,7 @@ public class TaskController {
         requireUser(userId);
         PageResult<Task> result = taskService.list(projectId, status, page, size);
         return ApiResponse.ok(new PageResult<>(
-                result.getItems().stream().map(TaskResponse::from).toList(),
+                result.getItems().stream().map(this::toResponse).toList(),
                 result.getPage(), result.getSize(), result.getTotal()));
     }
 
@@ -55,7 +56,7 @@ public class TaskController {
     public ApiResponse<TaskResponse> get(@RequestHeader(value = "X-User-Id", required = false) String userId,
                                          @PathVariable String taskId) {
         requireUser(userId);
-        return ApiResponse.ok(TaskResponse.from(taskService.get(taskId)));
+        return ApiResponse.ok(toResponse(taskService.get(taskId)));
     }
 
     @PatchMapping("/tasks/{taskId}")
@@ -63,8 +64,9 @@ public class TaskController {
                                             @PathVariable String taskId,
                                             @Valid @RequestBody UpdateTaskRequest req) {
         requireUser(userId);
-        return ApiResponse.ok(TaskResponse.from(
-                taskService.update(taskId, req.title(), req.description(), req.assigneeId())));
+        return ApiResponse.ok(toResponse(
+                taskService.update(taskId, req.title(), req.description(), req.assigneeId(),
+                        req.startAt(), req.startAllDay(), req.dueAt(), req.dueAllDay())));
     }
 
     @PostMapping("/tasks/{taskId}/move")
@@ -72,7 +74,11 @@ public class TaskController {
                                           @PathVariable String taskId,
                                           @Valid @RequestBody MoveTaskRequest req) {
         requireUser(userId);
-        return ApiResponse.ok(TaskResponse.from(taskService.move(taskId, req.toStatus())));
+        return ApiResponse.ok(toResponse(taskService.move(taskId, req.toStatus())));
+    }
+
+    private TaskResponse toResponse(Task t) {
+        return TaskResponse.from(t, taskService.isBlocked(t.getId()), taskService.blockerIds(t.getId()));
     }
 
     private String requireUser(String userId) {

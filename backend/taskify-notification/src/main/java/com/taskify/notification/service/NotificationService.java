@@ -88,6 +88,9 @@ public class NotificationService {
                     createAndPush(recipient, event, message);
                 }
             }
+            case "TASK_BLOCKED" -> notifyAssignee(event, "任务「" + event.title() + "」已被阻塞（存在未完成的依赖任务）");
+            case "TASK_UNBLOCKED" -> notifyAssignee(event, "任务「" + event.title() + "」的阻塞已解除，可以开始");
+            case "REMINDER" -> notifyAssignee(event, "任务「" + event.title() + "」的提醒已到期");
             default -> {
                 // 未知类型忽略
             }
