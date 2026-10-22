@@ -2,7 +2,7 @@ import { http, type PageResult } from './http'
 
 export interface Notification {
   id: string
-  type: 'TASK_CREATED' | 'TASK_UPDATED' | 'KANBAN_MOVED'
+  type: 'TASK_CREATED' | 'TASK_UPDATED' | 'KANBAN_MOVED' | 'REMINDER' | 'TASK_BLOCKED' | 'TASK_UNBLOCKED'
   taskId: string | null
   message: string
   read: boolean

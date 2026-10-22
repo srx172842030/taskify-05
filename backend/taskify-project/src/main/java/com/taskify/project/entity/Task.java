@@ -5,6 +5,8 @@ import com.taskify.common.base.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.OffsetDateTime;
+
 @Getter
 @Setter
 @TableName("taskify_task")
@@ -21,4 +23,12 @@ public class Task extends BaseEntity {
     private String status;
 
     private String createdBy;
+
+    private OffsetDateTime startAt;
+
+    private Boolean startAllDay;
+
+    private OffsetDateTime dueAt;
+
+    private Boolean dueAllDay;
 }
