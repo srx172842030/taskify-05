@@ -32,9 +32,11 @@ services:
 
   rocketmq-broker:
     image: apache/rocketmq:5.3.0
-    command: sh mqbroker -n rocketmq-namesrv:9876
+    command: sh mqbroker -c /home/rocketmq/broker.conf -n rocketmq-namesrv:9876
     depends_on:
       - rocketmq-namesrv
+    volumes:
+      - ./broker.conf:/home/rocketmq/broker.conf:ro
     ports:
       - "10911:10911"
       - "10909:10909"

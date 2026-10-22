@@ -25,6 +25,9 @@ export default {
         input: 'var(--input)',
         ring: 'var(--ring)',
       },
+      borderColor: {
+        DEFAULT: 'var(--border)',
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

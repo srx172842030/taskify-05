@@ -32,6 +32,33 @@
     "loginTitle": "登录",
     "registerTitle": "注册"
   },
+  "board": {
+    "todo": "待办事项",
+    "inProgress": "进行中",
+    "inReview": "审查中",
+    "done": "已完成",
+    "kanban": "看板",
+    "list": "列表",
+    "newTask": "新建任务"
+  },
+  "task": {
+    "detail": "任务详情",
+    "title": "标题",
+    "description": "描述",
+    "assignee": "负责人",
+    "unassigned": "未分配",
+    "moveTo": "移动到"
+  },
+  "comment": {
+    "placeholder": "发表评论…",
+    "submit": "评论",
+    "empty": "暂无评论"
+  },
+  "notification": {
+    "title": "通知",
+    "empty": "暂无通知",
+    "markAllRead": "全部已读"
+  },
   "error": {
     "notFound": "页面不存在",
     "serverError": "服务器开小差了",

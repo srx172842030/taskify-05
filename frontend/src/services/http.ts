@@ -6,6 +6,14 @@ export interface ApiEnvelope<T> {
   timestamp: string
 }
 
+export interface PageResult<T> {
+  items: T[]
+  page: number
+  size: number
+  total: number
+  totalPages: number
+}
+
 export class ApiError extends Error {
   constructor(
     public code: string,
@@ -40,4 +48,9 @@ export const http = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data) }),
+  put: <T>(path: string, data?: unknown) =>
+    request<T>(path, { method: 'PUT', body: data === undefined ? undefined : JSON.stringify(data) }),
+  patch: <T>(path: string, data?: unknown) =>
+    request<T>(path, { method: 'PATCH', body: data === undefined ? undefined : JSON.stringify(data) }),
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 }
