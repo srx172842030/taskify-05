@@ -16,10 +16,22 @@ spring:
               uri: lb://taskify-auth
               predicates:
                 - Path=/api/v1/auth/**
+            - id: users
+              uri: lb://taskify-auth
+              predicates:
+                - Path=/api/v1/users/**
             - id: example
               uri: lb://taskify-example
               predicates:
                 - Path=/api/v1/examples/**
+            - id: project
+              uri: lb://taskify-project
+              predicates:
+                - Path=/api/v1/projects/**, /api/v1/tasks/**, /api/v1/comments/**
+            - id: notification
+              uri: lb://taskify-notification
+              predicates:
+                - Path=/api/v1/notifications/**
           globalcors:
             cors-configurations:
               '[/**]':

@@ -5,6 +5,7 @@ import { useAuth } from '@/stores/auth'
 import { LogIn, Menu, Monitor, Moon, Sun } from 'lucide-vue-next'
 import AppDrawer from './AppDrawer.vue'
 import LoginDialog from '@/components/auth/LoginDialog.vue'
+import NotificationBell from '@/components/notification/NotificationBell.vue'
 
 const { mode, setTheme } = useTheme()
 const { isAuthenticated, user, logout } = useAuth()
@@ -33,12 +34,15 @@ const themeOptions = [
           <RouterLink to="/" class="text-muted-foreground hover:text-foreground">
             首页
           </RouterLink>
+          <RouterLink to="/projects" class="text-muted-foreground hover:text-foreground">
+            项目
+          </RouterLink>
         </nav>
 
         <div class="ml-auto flex items-center gap-2">
           <div class="relative">
             <button
-              class="flex items-center gap-1 rounded-md border px-2 py-1 text-sm"
+              class="flex h-9 items-center gap-1 rounded-md border px-2 text-sm"
               aria-label="切换主题"
               @click="themeOpen = !themeOpen"
             >
@@ -63,9 +67,10 @@ const themeOptions = [
           </div>
 
           <template v-if="isAuthenticated">
+            <NotificationBell />
             <span class="text-sm text-muted-foreground">{{ user?.username }}</span>
             <button
-              class="rounded-md border px-3 py-1.5 text-sm"
+              class="h-9 rounded-md border px-3 text-sm"
               @click="logout()"
             >
               登出
@@ -73,7 +78,7 @@ const themeOptions = [
           </template>
           <button
             v-else
-            class="flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground"
+            class="flex h-9 items-center gap-1 rounded-md bg-primary px-3 text-sm text-primary-foreground"
             @click="loginOpen = true"
           >
             <LogIn class="h-4 w-4" />

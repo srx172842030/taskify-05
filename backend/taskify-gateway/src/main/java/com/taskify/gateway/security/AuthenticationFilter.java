@@ -44,6 +44,10 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
         String auth = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         String token = extractToken(auth);
+        if (token == null) {
+            // SSE/EventSource 无法自定义请求头，允许经查询参数传递令牌
+            token = exchange.getRequest().getQueryParams().getFirst("token");
+        }
         if (token == null || !JwtUtil.isValid(jwtSecret, token)) {
             return unauthorized(exchange);
         }

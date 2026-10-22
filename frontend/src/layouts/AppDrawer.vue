@@ -30,6 +30,13 @@ const emit = defineEmits<{ close: [] }>()
           >
             首页
           </RouterLink>
+          <RouterLink
+            to="/projects"
+            class="rounded-md px-3 py-2 hover:bg-muted"
+            @click="emit('close')"
+          >
+            项目
+          </RouterLink>
         </nav>
       </aside>
     </div>

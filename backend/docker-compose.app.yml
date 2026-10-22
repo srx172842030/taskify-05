@@ -13,6 +13,8 @@ services:
     depends_on:
       - auth
       - example
+      - project
+      - notification
 
   auth:
     build: ./taskify-auth
@@ -28,6 +30,32 @@ services:
 
   example:
     build: ./taskify-example
+    network_mode: host
+    environment:
+      - NACOS_ADDR=localhost:8848
+      - POSTGRES_ADDR=localhost:5432
+      - POSTGRES_USER=taskify
+      - POSTGRES_PASSWORD=taskify
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      - ROCKETMQ_ADDR=localhost:9876
+      - JWT_SECRET=change-me-in-production-please-use-a-long-random-string
+
+  project:
+    build: ./taskify-project
+    network_mode: host
+    environment:
+      - NACOS_ADDR=localhost:8848
+      - POSTGRES_ADDR=localhost:5432
+      - POSTGRES_USER=taskify
+      - POSTGRES_PASSWORD=taskify
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      - ROCKETMQ_ADDR=localhost:9876
+      - JWT_SECRET=change-me-in-production-please-use-a-long-random-string
+
+  notification:
+    build: ./taskify-notification
     network_mode: host
     environment:
       - NACOS_ADDR=localhost:8848

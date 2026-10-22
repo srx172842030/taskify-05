@@ -23,6 +23,8 @@
     <module>taskify-gateway</module>
     <module>taskify-auth</module>
     <module>taskify-example</module>
+    <module>taskify-project</module>
+    <module>taskify-notification</module>
   </modules>
 
   <properties>

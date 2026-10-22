@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: [taskify-common, taskify-gateway, taskify-auth, taskify-example]
+        module: [taskify-common, taskify-gateway, taskify-auth, taskify-example, taskify-project, taskify-notification]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

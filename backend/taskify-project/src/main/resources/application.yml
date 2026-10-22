@@ -1,0 +1,41 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: taskify-project
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:localhost:8848}
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_ADDR:localhost:5432}/taskify
+    username: ${POSTGRES_USER:taskify}
+    password: ${POSTGRES_PASSWORD:taskify}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history_project
+    baseline-on-migrate: true
+    baseline-version: 0
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%X{requestId:-}] %logger{36} - %msg%n"
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+rocketmq:
+  name-server: ${ROCKETMQ_ADDR:localhost:9876}
+  producer:
+    group: taskify-project-producer-group
+
+taskify:
+  rocketmq:
+    enabled: true
