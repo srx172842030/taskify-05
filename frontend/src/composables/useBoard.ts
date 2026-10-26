@@ -1,7 +1,7 @@
+import { toast } from 'vue-sonner'
 import { taskApi, type Task, type TaskStatus } from '@/services/taskApi'
 import { STATUS_ORDER } from '@/services/taskStatus'
 import { useTasks } from '@/stores/tasks'
-import { useToast } from '@/composables/useToast'
 
 /** 目标列是否比当前列更靠后（向前推进）。 */
 function isAdvancing(from: TaskStatus, to: TaskStatus): boolean {
@@ -14,11 +14,10 @@ function isAdvancing(from: TaskStatus, to: TaskStatus): boolean {
  */
 export function useBoard() {
   const { upsert, reload } = useTasks()
-  const { push } = useToast()
 
   async function moveTask(task: Task, toStatus: TaskStatus): Promise<boolean> {
     if (task.blocked && isAdvancing(task.status, toStatus)) {
-      push('任务被未完成的依赖任务阻塞，无法推进', 'error')
+      toast.error('任务被未完成的依赖任务阻塞，无法推进')
       // 触发列重算，回弹被拖拽的任务（VueDraggable 的本地变更会因此被还原）
       upsert({ ...task })
       return false
@@ -35,7 +34,7 @@ export function useBoard() {
       return true
     } catch (e) {
       upsert({ ...task, status: previous })
-      push(e instanceof Error ? e.message : '移动失败', 'error')
+      toast.error(e instanceof Error ? e.message : '移动失败')
       return false
     }
   }

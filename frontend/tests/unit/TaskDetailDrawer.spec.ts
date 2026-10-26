@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 
 const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   upsert: vi.fn(),
-  push: vi.fn(),
+  error: vi.fn(),
+  success: vi.fn(),
 }))
 
 vi.mock('@/services/taskApi', () => ({
@@ -24,7 +25,9 @@ vi.mock('@/stores/tasks', () => ({ useTasks: () => ({ upsert: mocks.upsert, task
 vi.mock('@/stores/users', () => ({ useUsers: () => ({ users: [], byId: {} }) }))
 vi.mock('@/stores/auth', () => ({ useAuth: () => ({ user: ref(null) }) }))
 vi.mock('@/composables/useBoard', () => ({ useBoard: () => ({ moveTask: vi.fn() }) }))
-vi.mock('@/composables/useToast', () => ({ useToast: () => ({ push: mocks.push }) }))
+vi.mock('vue-sonner', () => ({
+  toast: Object.assign(vi.fn(), { error: mocks.error, success: mocks.success }),
+}))
 
 import TaskDetailDrawer from '@/components/task/TaskDetailDrawer.vue'
 import type { Task } from '@/services/taskApi'
@@ -47,15 +50,23 @@ const task: Task = {
   updatedAt: '',
 }
 
+function mountOpen() {
+  return mount(TaskDetailDrawer, {
+    props: { task, modelValue: true },
+    global: { stubs: { Teleport: { template: '<div><slot /></div>' } } },
+  })
+}
+
 describe('TaskDetailDrawer', () => {
   beforeEach(() => {
     mocks.update.mockReset()
     mocks.upsert.mockReset()
-    mocks.push.mockReset()
+    mocks.error.mockReset()
   })
 
   it('渲染抽屉并拒绝空标题保存', async () => {
-    const wrapper = mount(TaskDetailDrawer, { props: { task, modelValue: true } })
+    const wrapper = mountOpen()
+    await flushPromises()
     expect(wrapper.text()).toContain('任务详情')
 
     const titleInput = wrapper.find('input')
@@ -64,11 +75,12 @@ describe('TaskDetailDrawer', () => {
     await saveButton!.trigger('click')
 
     expect(mocks.update).not.toHaveBeenCalled()
-    expect(mocks.push).toHaveBeenCalledWith('标题不能为空', 'error')
+    expect(mocks.error).toHaveBeenCalledWith('标题不能为空')
   })
 
-  it('渲染开始/截止时间与全天选项', () => {
-    const wrapper = mount(TaskDetailDrawer, { props: { task, modelValue: true } })
+  it('渲染开始/截止时间与全天选项', async () => {
+    const wrapper = mountOpen()
+    await flushPromises()
     expect(wrapper.text()).toContain('开始时间')
     expect(wrapper.text()).toContain('截止时间')
     expect(wrapper.text()).toContain('全天')

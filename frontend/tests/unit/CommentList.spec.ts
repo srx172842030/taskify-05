@@ -4,7 +4,6 @@ import { mount } from '@vue/test-utils'
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
-  push: vi.fn(),
 }))
 
 vi.mock('@/services/commentApi', () => ({
@@ -14,7 +13,9 @@ vi.mock('@/stores/auth', () => ({ useAuth: () => ({ user: ref({ id: 'me', userna
 vi.mock('@/stores/users', () => ({
   useUsers: () => ({ byId: { me: '我', other: '他人' } }),
 }))
-vi.mock('@/composables/useToast', () => ({ useToast: () => ({ push: mocks.push }) }))
+vi.mock('vue-sonner', () => ({
+  toast: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn() }),
+}))
 
 import CommentList from '@/components/task/CommentList.vue'
 
@@ -24,7 +25,6 @@ const others = { id: 'c2', taskId: 't', authorId: 'other', content: '他人评�
 describe('CommentList 编辑/删除仅作者可见', () => {
   beforeEach(() => {
     mocks.list.mockReset()
-    mocks.push.mockReset()
   })
 
   it('仅作者评论显示编辑/删除按钮', async () => {

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { toast } from 'vue-sonner'
 import { reminderApi, type Reminder } from '@/services/reminderApi'
 import { formatTaskTime } from '@/services/taskTime'
-import { useToast } from '@/composables/useToast'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const props = defineProps<{ taskId: string }>()
-const { push } = useToast()
 
 const reminders = ref<Reminder[]>([])
 const mode = ref<'ABSOLUTE' | 'RELATIVE'>('ABSOLUTE')
@@ -36,9 +39,9 @@ async function add() {
     }
     triggerAt.value = ''
     await load()
-    push('已添加提醒', 'success')
+    toast.success('已添加提醒')
   } catch (e) {
-    push(e instanceof Error ? e.message : '添加失败', 'error')
+    toast.error(e instanceof Error ? e.message : '添加失败')
   } finally {
     adding.value = false
   }
@@ -49,7 +52,7 @@ async function remove(id: string) {
     await reminderApi.delete(id)
     await load()
   } catch (e) {
-    push(e instanceof Error ? e.message : '删除失败', 'error')
+    toast.error(e instanceof Error ? e.message : '删除失败')
   }
 }
 </script>
@@ -67,58 +70,56 @@ async function remove(id: string) {
         <template v-if="r.mode === 'ABSOLUTE'">{{ formatTaskTime(r.triggerAt, false) }}</template>
         <template v-else>提前 {{ r.offsetMinutes }} 分钟（{{ r.anchor === 'START' ? '开始前' : '截止前' }}）</template>
       </span>
-      <button class="text-xs text-muted-foreground hover:text-destructive" @click="remove(r.id)">删除</button>
+      <Button
+        variant="ghost"
+        size="sm"
+        class="h-auto px-2 py-0 text-xs text-muted-foreground hover:text-destructive"
+        @click="remove(r.id)"
+      >
+        删除
+      </Button>
     </div>
 
     <div class="space-y-2 rounded-md border p-3">
       <div class="flex gap-2">
-        <button
-          class="rounded border px-2 py-1 text-xs"
-          :class="mode === 'ABSOLUTE' ? 'bg-muted' : ''"
+        <Button
+          type="button"
+          size="sm"
+          :variant="mode === 'ABSOLUTE' ? 'secondary' : 'outline'"
           @click="mode = 'ABSOLUTE'"
         >
           绝对时间
-        </button>
-        <button
-          class="rounded border px-2 py-1 text-xs"
-          :class="mode === 'RELATIVE' ? 'bg-muted' : ''"
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          :variant="mode === 'RELATIVE' ? 'secondary' : 'outline'"
           @click="mode = 'RELATIVE'"
         >
           相对提前
-        </button>
+        </Button>
       </div>
+
       <div v-if="mode === 'ABSOLUTE'" class="space-y-1">
-        <label class="block text-xs text-muted-foreground">触发时间</label>
-        <input
-          v-model="triggerAt"
-          type="datetime-local"
-          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
+        <Label for="reminder-trigger">触发时间</Label>
+        <Input id="reminder-trigger" v-model="triggerAt" type="datetime-local" />
       </div>
       <div v-else class="space-y-1">
-        <label class="block text-xs text-muted-foreground">提前分钟数</label>
-        <input
-          v-model.number="offsetMinutes"
-          type="number"
-          min="1"
-          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-        <label class="block text-xs text-muted-foreground">锚定时间</label>
-        <select
-          v-model="anchor"
-          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="DUE">截止时间</option>
-          <option value="START">开始时间</option>
-        </select>
+        <Label for="reminder-offset">提前分钟数</Label>
+        <Input id="reminder-offset" v-model.number="offsetMinutes" type="number" min="1" />
+        <Label for="reminder-anchor">锚定时间</Label>
+        <Select v-model="anchor">
+          <SelectTrigger id="reminder-anchor">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="DUE">截止时间</SelectItem>
+            <SelectItem value="START">开始时间</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      <button
-        :disabled="adding"
-        class="rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-60"
-        @click="add"
-      >
-        添加提醒
-      </button>
+
+      <Button :disabled="adding" @click="add">添加提醒</Button>
     </div>
   </div>
 </template>

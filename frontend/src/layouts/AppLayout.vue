@@ -6,12 +6,18 @@ import { LogIn, Menu, Monitor, Moon, Sun } from 'lucide-vue-next'
 import AppDrawer from './AppDrawer.vue'
 import LoginDialog from '@/components/auth/LoginDialog.vue'
 import NotificationBell from '@/components/notification/NotificationBell.vue'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const { mode, setTheme } = useTheme()
 const { isAuthenticated, user, logout } = useAuth()
 const drawerOpen = ref(false)
 const loginOpen = ref(false)
-const themeOpen = ref(false)
 
 const themeOptions = [
   { value: 'light' as const, label: '亮色', icon: Sun },
@@ -24,66 +30,43 @@ const themeOptions = [
   <div class="flex min-h-screen flex-col">
     <header class="sticky top-0 z-30 border-b bg-card">
       <div class="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
-        <button class="md:hidden" aria-label="打开导航" @click="drawerOpen = true">
-          <Menu class="h-5 w-5" />
-        </button>
+        <Button variant="ghost" size="icon" class="md:hidden" aria-label="打开导航" @click="drawerOpen = true">
+          <Menu />
+        </Button>
 
         <RouterLink to="/" class="text-lg font-semibold">Taskify</RouterLink>
 
         <nav class="hidden items-center gap-4 text-sm md:flex">
-          <RouterLink to="/" class="text-muted-foreground hover:text-foreground">
-            首页
-          </RouterLink>
-          <RouterLink to="/projects" class="text-muted-foreground hover:text-foreground">
-            项目
-          </RouterLink>
+          <RouterLink to="/" class="text-muted-foreground hover:text-foreground">首页</RouterLink>
+          <RouterLink to="/projects" class="text-muted-foreground hover:text-foreground">项目</RouterLink>
         </nav>
 
         <div class="ml-auto flex items-center gap-2">
-          <div class="relative">
-            <button
-              class="flex h-9 items-center gap-1 rounded-md border px-2 text-sm"
-              aria-label="切换主题"
-              @click="themeOpen = !themeOpen"
-            >
-              <Sun v-if="mode === 'light'" class="h-4 w-4" />
-              <Moon v-else-if="mode === 'dark'" class="h-4 w-4" />
-              <Monitor v-else class="h-4 w-4" />
-            </button>
-            <div
-              v-if="themeOpen"
-              class="absolute right-0 mt-1 w-32 rounded-md border bg-popover p-1 shadow-md"
-            >
-              <button
-                v-for="o in themeOptions"
-                :key="o.value"
-                class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
-                @click="setTheme(o.value); themeOpen = false"
-              >
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" size="icon" aria-label="切换主题">
+                <Sun v-if="mode === 'light'" />
+                <Moon v-else-if="mode === 'dark'" />
+                <Monitor v-else />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem v-for="o in themeOptions" :key="o.value" @select="setTheme(o.value)">
                 <component :is="o.icon" class="h-4 w-4" />
                 {{ o.label }}
-              </button>
-            </div>
-          </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <template v-if="isAuthenticated">
             <NotificationBell />
-            <span class="text-sm text-muted-foreground">{{ user?.username }}</span>
-            <button
-              class="h-9 rounded-md border px-3 text-sm"
-              @click="logout()"
-            >
-              登出
-            </button>
+            <span class="hidden text-sm text-muted-foreground sm:inline">{{ user?.username }}</span>
+            <Button variant="outline" @click="logout()">登出</Button>
           </template>
-          <button
-            v-else
-            class="flex h-9 items-center gap-1 rounded-md bg-primary px-3 text-sm text-primary-foreground"
-            @click="loginOpen = true"
-          >
-            <LogIn class="h-4 w-4" />
+          <Button v-else @click="loginOpen = true">
+            <LogIn />
             登录
-          </button>
+          </Button>
         </div>
       </div>
     </header>

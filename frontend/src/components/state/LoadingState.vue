@@ -1,8 +1,11 @@
+<script setup lang="ts">
+import { Skeleton } from '@/components/ui/skeleton'
+</script>
+
 <template>
-  <div class="flex items-center justify-center gap-2 py-8 text-muted-foreground">
-    <span class="h-2 w-2 animate-pulse rounded-full bg-current"></span>
-    <span class="h-2 w-2 animate-pulse rounded-full bg-current [animation-delay:150ms]"></span>
-    <span class="h-2 w-2 animate-pulse rounded-full bg-current [animation-delay:300ms]"></span>
-    <span class="ml-2 text-sm">加载中…</span>
+  <div class="w-full space-y-2 py-8">
+    <Skeleton class="h-4 w-full" />
+    <Skeleton class="h-4 w-5/6" />
+    <Skeleton class="h-4 w-2/3" />
   </div>
 </template>

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import Button from '@/components/ui/Button.vue'
+import { Button } from '@/components/ui/button'
 
 describe('Button', () => {
   it('渲染默认插槽内容', () => {

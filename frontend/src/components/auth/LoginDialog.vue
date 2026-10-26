@@ -3,9 +3,13 @@ import { ref, watch } from 'vue'
 import { useField, useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
-import { RefreshCw, X } from 'lucide-vue-next'
+import { RefreshCw } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
 import { authApi, type CaptchaResult } from '@/services/auth'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 const open = defineModel<boolean>({ default: false })
 const auth = useAuth()
@@ -63,92 +67,63 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <Transition name="fade">
-    <div
-      v-if="open"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      @click.self="open = false"
-    >
-      <div class="w-full max-w-sm rounded-lg border bg-card p-6 shadow-lg">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold">{{ mode === 'login' ? '登录' : '注册' }}</h2>
-          <button aria-label="关闭" @click="open = false">
-            <X class="h-5 w-5" />
-          </button>
+  <Dialog v-model:open="open">
+    <DialogContent class="max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{{ mode === 'login' ? '登录' : '注册' }}</DialogTitle>
+        <DialogDescription class="sr-only">
+          {{ mode === 'login' ? '登录到你的账户' : '创建一个新账户' }}
+        </DialogDescription>
+      </DialogHeader>
+
+      <form class="space-y-3" @submit="onSubmit">
+        <div class="space-y-1">
+          <Label for="login-username">用户名</Label>
+          <Input id="login-username" v-model="username" type="text" placeholder="用户名" />
+          <p v-if="usernameError" class="text-xs text-destructive">{{ usernameError }}</p>
         </div>
 
-        <form class="mt-4 space-y-3" @submit="onSubmit">
-          <div>
-            <input
-              v-model="username"
-              type="text"
-              placeholder="用户名"
-              class="w-full rounded-md border bg-background px-3 py-2 text-sm"
-            />
-            <p v-if="usernameError" class="mt-1 text-xs text-destructive">{{ usernameError }}</p>
-          </div>
+        <div class="space-y-1">
+          <Label for="login-password">密码</Label>
+          <Input id="login-password" v-model="password" type="password" placeholder="密码" />
+          <p v-if="passwordError" class="text-xs text-destructive">{{ passwordError }}</p>
+        </div>
 
-          <div>
-            <input
-              v-model="password"
-              type="password"
-              placeholder="密码"
-              class="w-full rounded-md border bg-background px-3 py-2 text-sm"
-            />
-            <p v-if="passwordError" class="mt-1 text-xs text-destructive">{{ passwordError }}</p>
-          </div>
-
+        <div class="space-y-1">
+          <Label for="login-captcha">验证码</Label>
           <div class="flex items-center gap-2">
-            <input
-              v-model="captchaCode"
-              type="text"
-              placeholder="验证码"
-              class="w-full rounded-md border bg-background px-3 py-2 text-sm"
-            />
-            <button
+            <Input id="login-captcha" v-model="captchaCode" type="text" placeholder="验证码" />
+            <Button
               type="button"
-              class="shrink-0 overflow-hidden rounded-md border"
+              variant="outline"
+              class="h-9 w-24 shrink-0 overflow-hidden p-0"
               aria-label="刷新验证码"
               @click="loadCaptcha"
             >
               <img v-if="captcha" :src="captcha.image" alt="验证码" class="h-9 w-24" />
               <RefreshCw v-else class="h-9 w-24 p-2" />
-            </button>
+            </Button>
           </div>
           <p v-if="captchaError" class="text-xs text-destructive">{{ captchaError }}</p>
+        </div>
 
-          <p v-if="error" class="text-xs text-destructive">{{ error }}</p>
+        <p v-if="error" class="text-xs text-destructive">{{ error }}</p>
 
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full rounded-md bg-primary py-2 text-sm text-primary-foreground disabled:opacity-60"
-          >
-            {{ loading ? '提交中…' : mode === 'login' ? '登录' : '注册' }}
-          </button>
-        </form>
+        <Button type="submit" :disabled="loading" class="w-full">
+          {{ loading ? '提交中…' : mode === 'login' ? '登录' : '注册' }}
+        </Button>
+      </form>
 
-        <p class="mt-3 text-center text-sm text-muted-foreground">
-          {{ mode === 'login' ? '没有账号？' : '已有账号？' }}
-          <button
-            class="text-primary underline"
-            @click="mode = mode === 'login' ? 'register' : 'login'"
-          >
-            {{ mode === 'login' ? '去注册' : '去登录' }}
-          </button>
-        </p>
-      </div>
-    </div>
-  </Transition>
+      <p class="text-center text-sm text-muted-foreground">
+        {{ mode === 'login' ? '没有账号？' : '已有账号？' }}
+        <Button
+          variant="link"
+          class="h-auto p-0 align-baseline"
+          @click="mode = mode === 'login' ? 'register' : 'login'"
+        >
+          {{ mode === 'login' ? '去注册' : '去登录' }}
+        </Button>
+      </p>
+    </DialogContent>
+  </Dialog>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

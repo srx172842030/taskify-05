@@ -8,11 +8,11 @@ import { useTasks } from '@/stores/tasks'
 import { useUsers } from '@/stores/users'
 import { STATUS_LABELS, STATUS_ORDER } from '@/services/taskStatus'
 import { formatTaskTime } from '@/services/taskTime'
-import { useToast } from '@/composables/useToast'
+import { toast } from 'vue-sonner'
 import KanbanBoard from '@/components/board/KanbanBoard.vue'
 import KanbanColumn from '@/components/board/KanbanColumn.vue'
 import TaskDetailDrawer from '@/components/task/TaskDetailDrawer.vue'
-import Tabs from '@/components/ui/Tabs.vue'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const route = useRoute()
 const projectId = computed(() => route.params.id as string)
@@ -20,7 +20,6 @@ const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const { tasks, loading, load, upsert, reset } = useTasks()
 const { users, load: loadUsers } = useUsers()
-const { push } = useToast()
 
 const project = ref<Project | null>(null)
 const viewMode = ref<'board' | 'list'>('board')
@@ -34,8 +33,6 @@ const newDescription = ref('')
 const newAssignee = ref('')
 const creating = ref(false)
 
-const statusTabs = STATUS_ORDER.map((s) => ({ value: s, label: STATUS_LABELS[s] }))
-
 async function loadProject() {
   try {
     project.value = null
@@ -45,7 +42,7 @@ async function loadProject() {
     project.value = await projectApi.get(projectId.value)
     await load(projectId.value)
   } catch (e) {
-    push(e instanceof Error ? e.message : '加载失败', 'error')
+    toast.error(e instanceof Error ? e.message : '加载失败')
   }
 }
 
@@ -63,6 +60,14 @@ watch(tasks, (list) => {
   }
 }, { deep: true })
 
+// 移动端单列视图：任务移动后跟随其新列，确保卡片仍可见
+watch(
+  () => selectedTask.value?.status,
+  (s) => {
+    if (s) mobileColumn.value = s
+  },
+)
+
 function openTask(t: Task) {
   selectedTask.value = t
   drawerOpen.value = true
@@ -70,7 +75,7 @@ function openTask(t: Task) {
 
 async function createTask() {
   if (!newTitle.value.trim()) {
-    push('标题不能为空', 'error')
+    toast.error('标题不能为空')
     return
   }
   creating.value = true
@@ -86,7 +91,7 @@ async function createTask() {
     newAssignee.value = ''
     createOpen.value = false
   } catch (e) {
-    push(e instanceof Error ? e.message : '创建失败', 'error')
+    toast.error(e instanceof Error ? e.message : '创建失败')
   } finally {
     creating.value = false
   }
@@ -159,7 +164,13 @@ async function createTask() {
       <div v-if="viewMode === 'board'" class="mt-6">
         <KanbanBoard v-if="isDesktop" :tasks="tasks" @open="openTask" />
         <div v-else>
-          <Tabs v-model="mobileColumn" :tabs="statusTabs" />
+          <Tabs v-model="mobileColumn">
+            <TabsList>
+              <TabsTrigger v-for="s in STATUS_ORDER" :key="s" :value="s">
+                {{ STATUS_LABELS[s] }}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <KanbanColumn class="mt-3" :status="mobileColumn" :tasks="tasks" @open="openTask" />
         </div>
       </div>
