@@ -13,6 +13,7 @@ public record TaskResponse(
         String assigneeId,
         String status,
         String createdBy,
+        String priority,
         OffsetDateTime startAt,
         Boolean startAllDay,
         OffsetDateTime dueAt,
@@ -28,7 +29,7 @@ public record TaskResponse(
 
     public static TaskResponse from(Task t, boolean blocked, List<String> blockerIds) {
         return new TaskResponse(t.getId(), t.getProjectId(), t.getTitle(), t.getDescription(),
-                t.getAssigneeId(), t.getStatus(), t.getCreatedBy(),
+                t.getAssigneeId(), t.getStatus(), t.getCreatedBy(), t.getPriority(),
                 t.getStartAt(), t.getStartAllDay(), t.getDueAt(), t.getDueAllDay(),
                 blocked, blockerIds, t.getCreatedAt(), t.getUpdatedAt());
     }

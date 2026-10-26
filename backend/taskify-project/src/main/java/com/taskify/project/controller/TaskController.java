@@ -4,6 +4,7 @@ import com.taskify.common.error.BusinessException;
 import com.taskify.common.error.ErrorCode;
 import com.taskify.common.response.ApiResponse;
 import com.taskify.common.response.PageResult;
+import com.taskify.project.dto.BatchUpdateTaskRequest;
 import com.taskify.project.dto.CreateTaskRequest;
 import com.taskify.project.dto.MoveTaskRequest;
 import com.taskify.project.dto.TaskResponse;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -35,7 +38,7 @@ public class TaskController {
                                             @Valid @RequestBody CreateTaskRequest req) {
         return ApiResponse.ok(toResponse(taskService.create(
                 requireUser(userId), projectId, req.title(), req.description(), req.assigneeId(),
-                req.startAt(), req.startAllDay(), req.dueAt(), req.dueAllDay())));
+                req.priority(), req.startAt(), req.startAllDay(), req.dueAt(), req.dueAllDay())));
     }
 
     @GetMapping("/projects/{projectId}/tasks")
@@ -66,7 +69,7 @@ public class TaskController {
         requireUser(userId);
         return ApiResponse.ok(toResponse(
                 taskService.update(taskId, req.title(), req.description(), req.assigneeId(),
-                        req.startAt(), req.startAllDay(), req.dueAt(), req.dueAllDay())));
+                        req.priority(), req.startAt(), req.startAllDay(), req.dueAt(), req.dueAllDay())));
     }
 
     @PostMapping("/tasks/{taskId}/move")
@@ -75,6 +78,16 @@ public class TaskController {
                                           @Valid @RequestBody MoveTaskRequest req) {
         requireUser(userId);
         return ApiResponse.ok(toResponse(taskService.move(taskId, req.toStatus())));
+    }
+
+    @PostMapping("/projects/{projectId}/tasks/batch-update")
+    public ApiResponse<List<TaskResponse>> batchUpdate(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @PathVariable String projectId,
+            @Valid @RequestBody BatchUpdateTaskRequest req) {
+        requireUser(userId);
+        return ApiResponse.ok(taskService.batchUpdate(projectId, req.taskIds(), req.patch()).stream()
+                .map(this::toResponse).toList());
     }
 
     private TaskResponse toResponse(Task t) {
