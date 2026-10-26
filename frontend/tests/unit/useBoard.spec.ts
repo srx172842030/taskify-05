@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ move: vi.fn(), upsert: vi.fn(), reload: vi.fn(), push: vi.fn() }))
+const mocks = vi.hoisted(() => ({ move: vi.fn(), upsert: vi.fn(), reload: vi.fn(), error: vi.fn() }))
 
 vi.mock('@/services/taskApi', () => ({
   taskApi: { move: mocks.move },
 }))
 vi.mock('@/stores/tasks', () => ({ useTasks: () => ({ upsert: mocks.upsert, reload: mocks.reload }) }))
-vi.mock('@/composables/useToast', () => ({ useToast: () => ({ push: mocks.push }) }))
+vi.mock('vue-sonner', () => ({
+  toast: Object.assign(vi.fn(), { error: mocks.error, success: vi.fn() }),
+}))
 
 import { useBoard } from '@/composables/useBoard'
 import type { Task } from '@/services/taskApi'
@@ -34,7 +36,7 @@ describe('useBoard.moveTask', () => {
     mocks.move.mockReset()
     mocks.upsert.mockReset()
     mocks.reload.mockReset()
-    mocks.push.mockReset()
+    mocks.error.mockReset()
   })
 
   it('移动成功时乐观更新并落定', async () => {
@@ -53,7 +55,7 @@ describe('useBoard.moveTask', () => {
     expect(ok).toBe(false)
     expect(mocks.upsert).toHaveBeenCalledWith({ ...task, status: 'DONE' })
     expect(mocks.upsert).toHaveBeenCalledWith({ ...task, status: 'TODO' })
-    expect(mocks.push).toHaveBeenCalled()
+    expect(mocks.error).toHaveBeenCalled()
   })
 
   it('被阻塞任务不允许向前推进，并触发回弹重算', async () => {
@@ -62,7 +64,7 @@ describe('useBoard.moveTask', () => {
     const ok = await moveTask(blockedTask, 'IN_PROGRESS')
     expect(ok).toBe(false)
     expect(mocks.move).not.toHaveBeenCalled()
-    expect(mocks.push).toHaveBeenCalled()
+    expect(mocks.error).toHaveBeenCalled()
     expect(mocks.upsert).toHaveBeenCalledWith({ ...blockedTask })
   })
 

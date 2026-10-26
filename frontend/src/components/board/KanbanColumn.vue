@@ -5,6 +5,7 @@ import TaskCard from './TaskCard.vue'
 import { useBoard } from '@/composables/useBoard'
 import { STATUS_LABELS } from '@/services/taskStatus'
 import type { Task, TaskStatus } from '@/services/taskApi'
+import { Card } from '@/components/ui/card'
 
 const props = defineProps<{ status: TaskStatus; tasks: Task[] }>()
 const emit = defineEmits<{ open: [task: Task] }>()
@@ -32,7 +33,7 @@ function onAdd(evt: { newIndex?: number }) {
 </script>
 
 <template>
-  <section class="flex flex-col rounded-lg border bg-muted/40">
+  <Card class="flex flex-col rounded-lg border bg-muted/40 shadow-none">
     <header class="flex items-center justify-between px-3 py-2">
       <h3 class="text-sm font-semibold">{{ STATUS_LABELS[status] }}</h3>
       <span class="text-xs text-muted-foreground">{{ items.length }}</span>
@@ -49,5 +50,5 @@ function onAdd(evt: { newIndex?: number }) {
     >
       <TaskCard v-for="t in items" :key="t.id" :task="t" @click="emit('open', t)" />
     </VueDraggable>
-  </section>
+  </Card>
 </template>

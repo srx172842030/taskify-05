@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import { commentApi, type Comment } from '@/services/commentApi'
 import { useAuth } from '@/stores/auth'
 import { useUsers } from '@/stores/users'
-import { useToast } from '@/composables/useToast'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 
 const props = defineProps<{ taskId: string; refreshKey: number }>()
 
 const { user } = useAuth()
 const { byId } = useUsers()
-const { push } = useToast()
 
 const comments = ref<Comment[]>([])
 const editingId = ref<string | null>(null)
@@ -37,7 +38,7 @@ async function saveEdit(c: Comment) {
     if (i >= 0) comments.value[i] = updated
     editingId.value = null
   } catch (e) {
-    push(e instanceof Error ? e.message : '编辑失败', 'error')
+    toast.error(e instanceof Error ? e.message : '编辑失败')
   }
 }
 
@@ -46,7 +47,7 @@ async function remove(c: Comment) {
     await commentApi.remove(c.id)
     comments.value = comments.value.filter((x) => x.id !== c.id)
   } catch (e) {
-    push(e instanceof Error ? e.message : '删除失败', 'error')
+    toast.error(e instanceof Error ? e.message : '删除失败')
   }
 }
 
@@ -65,22 +66,30 @@ function fmt(iso: string) {
         <span>{{ fmt(c.createdAt) }}</span>
       </div>
       <template v-if="editingId === c.id">
-        <textarea
-          v-model="editingContent"
-          rows="2"
-          class="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-        />
+        <Textarea v-model="editingContent" rows="2" class="mt-2" />
         <div class="mt-2 flex gap-2">
-          <button class="rounded-md bg-primary px-3 py-1 text-xs text-primary-foreground" @click="saveEdit(c)">
-            保存
-          </button>
-          <button class="rounded-md border px-3 py-1 text-xs" @click="editingId = null">取消</button>
+          <Button size="sm" @click="saveEdit(c)">保存</Button>
+          <Button size="sm" variant="outline" @click="editingId = null">取消</Button>
         </div>
       </template>
       <p v-else class="mt-1 whitespace-pre-wrap text-sm">{{ c.content }}</p>
       <div v-if="!editingId && isAuthor(c)" class="mt-2 flex gap-2">
-        <button class="text-xs text-muted-foreground hover:text-foreground" @click="startEdit(c)">编辑</button>
-        <button class="text-xs text-destructive" @click="remove(c)">删除</button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-auto px-2 py-0 text-xs text-muted-foreground hover:text-foreground"
+          @click="startEdit(c)"
+        >
+          编辑
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-auto px-2 py-0 text-xs text-destructive"
+          @click="remove(c)"
+        >
+          删除
+        </Button>
       </div>
     </div>
   </div>

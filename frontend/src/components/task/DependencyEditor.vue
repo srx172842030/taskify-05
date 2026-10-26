@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { toast } from 'vue-sonner'
 import { dependencyApi, type Dependency } from '@/services/dependencyApi'
 import type { Task } from '@/services/taskApi'
 import { STATUS_LABELS } from '@/services/taskStatus'
-import { useToast } from '@/composables/useToast'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 
 const props = defineProps<{ taskId: string; tasks: Task[] }>()
-const { push } = useToast()
 
 const deps = ref<Dependency | null>(null)
 const blockerId = ref('')
@@ -30,9 +31,9 @@ async function add() {
     await dependencyApi.create(props.taskId, blockerId.value)
     blockerId.value = ''
     await load()
-    push('已建立阻塞关系', 'success')
+    toast.success('已建立阻塞关系')
   } catch (e) {
-    push(e instanceof Error ? e.message : '建立失败', 'error')
+    toast.error(e instanceof Error ? e.message : '建立失败')
   }
 }
 
@@ -41,7 +42,7 @@ async function remove(blockerTaskId: string) {
     await dependencyApi.remove(props.taskId, blockerTaskId)
     await load()
   } catch (e) {
-    push(e instanceof Error ? e.message : '解除失败', 'error')
+    toast.error(e instanceof Error ? e.message : '解除失败')
   }
 }
 </script>
@@ -57,7 +58,14 @@ async function remove(blockerTaskId: string) {
       class="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
     >
       <span>{{ b.title ?? title(b.taskId) }}（{{ label(b.status) }}）</span>
-      <button class="text-xs text-muted-foreground hover:text-destructive" @click="remove(b.taskId)">解除</button>
+      <Button
+        variant="ghost"
+        size="sm"
+        class="h-auto px-2 py-0 text-xs text-muted-foreground hover:text-destructive"
+        @click="remove(b.taskId)"
+      >
+        解除
+      </Button>
     </div>
 
     <div v-if="deps?.dependents?.length" class="text-xs text-muted-foreground">阻塞这些任务：</div>
@@ -70,16 +78,17 @@ async function remove(blockerTaskId: string) {
     </div>
 
     <div class="flex gap-2">
-      <select
-        v-model="blockerId"
-        class="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">选择阻塞任务…</option>
-        <option v-for="t in props.tasks.filter((x) => x.id !== props.taskId)" :key="t.id" :value="t.id">
-          {{ t.title }}
-        </option>
-      </select>
-      <button class="rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground" @click="add">添加</button>
+      <Select v-model="blockerId">
+        <SelectTrigger class="flex-1">
+          <SelectValue placeholder="选择阻塞任务…" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="t in props.tasks.filter((x) => x.id !== props.taskId)" :key="t.id" :value="t.id">
+            {{ t.title }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      <Button size="sm" @click="add">添加</Button>
     </div>
   </div>
 </template>
