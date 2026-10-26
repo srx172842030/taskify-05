@@ -33,16 +33,16 @@ const newDescription = ref('')
 const newAssignee = ref('')
 const creating = ref(false)
 
+const initialLoading = ref(true)
+
 async function loadProject() {
   try {
-    project.value = null
-    reset()
-    selectedTask.value = null
-    drawerOpen.value = false
     project.value = await projectApi.get(projectId.value)
     await load(projectId.value)
   } catch (e) {
     toast.error(e instanceof Error ? e.message : '加载失败')
+  } finally {
+    initialLoading.value = false
   }
 }
 
@@ -53,12 +53,16 @@ onMounted(() => {
 
 watch(projectId, () => loadProject())
 
-watch(tasks, (list) => {
-  if (selectedTask.value) {
-    const updated = list.find((t) => t.id === selectedTask.value!.id)
-    if (updated) selectedTask.value = updated
-  }
-}, { deep: true })
+watch(
+  tasks,
+  (list) => {
+    if (selectedTask.value) {
+      const updated = list.find((t) => t.id === selectedTask.value!.id)
+      if (updated) selectedTask.value = updated
+    }
+  },
+  { deep: true },
+)
 
 // 移动端单列视图：任务移动后跟随其新列，确保卡片仍可见
 watch(
@@ -102,7 +106,9 @@ async function createTask() {
   <section class="mx-auto max-w-6xl px-4 py-8">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <RouterLink to="/projects" class="text-sm text-muted-foreground hover:text-foreground">← 项目</RouterLink>
+        <RouterLink to="/projects" class="text-sm text-muted-foreground hover:text-foreground"
+          >← 项目</RouterLink
+        >
         <h1 class="mt-1 text-2xl font-bold">{{ project?.name ?? '…' }}</h1>
       </div>
       <div class="flex items-center gap-2">
@@ -159,7 +165,7 @@ async function createTask() {
       </button>
     </div>
 
-    <p v-if="loading" class="mt-6 text-muted-foreground">加载中…</p>
+    <p v-if="initialLoading" class="mt-6 text-muted-foreground">加载中…</p>
     <template v-else>
       <div v-if="viewMode === 'board'" class="mt-6">
         <KanbanBoard v-if="isDesktop" :tasks="tasks" @open="openTask" />
@@ -175,14 +181,20 @@ async function createTask() {
         </div>
       </div>
       <div v-else class="mt-6 space-y-2">
-        <div v-for="t in tasks" :key="t.id" class="flex items-center justify-between rounded-md border p-3">
+        <div
+          v-for="t in tasks"
+          :key="t.id"
+          class="flex items-center justify-between rounded-md border p-3"
+        >
           <div>
             <p class="font-medium">{{ t.title }}</p>
             <p class="text-xs text-muted-foreground">
               {{ STATUS_LABELS[t.status] }}
               <span v-if="t.blocked" class="ml-2 text-amber-600">被阻塞</span>
             </p>
-            <p v-if="t.dueAt" class="text-xs text-muted-foreground">截止：{{ formatTaskTime(t.dueAt, t.dueAllDay) }}</p>
+            <p v-if="t.dueAt" class="text-xs text-muted-foreground">
+              截止：{{ formatTaskTime(t.dueAt, t.dueAllDay) }}
+            </p>
           </div>
           <button class="text-sm text-primary" @click="openTask(t)">详情</button>
         </div>
