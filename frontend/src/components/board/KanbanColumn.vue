@@ -34,9 +34,13 @@ const columnTasks = computed(() =>
 )
 const { lanes } = useSwimlane(columnTasks, computed(() => props.swimlaneBy), (id) => byId.value[id] ?? id)
 
-watch(columnTasks, (v) => {
-  items.value = v
-}, { immediate: true })
+watch(
+  () => sortTasks(props.tasks.filter((t) => t.status === props.status), props.sortBy, props.sortDir),
+  (v) => {
+    items.value = v
+  },
+  { immediate: true },
+)
 
 function onAdd(evt: { newIndex?: number }) {
   const idx = evt.newIndex

@@ -69,7 +69,7 @@ watch([swimlaneBy, boardMineOnly, boardSortBy, boardSortDir], () =>
 const auth = useAuth()
 const currentUserId = computed(() => auth.user.value?.id ?? '')
 const boardTasks = computed(() =>
-  boardMineOnly.value ? tasks.value.filter((t) => t.assigneeId === currentUserId.value) : tasks.value,
+  tasks.value.filter((t) => !boardMineOnly.value || t.assigneeId === currentUserId.value),
 )
 
 function toggleBoardSortDir() {
