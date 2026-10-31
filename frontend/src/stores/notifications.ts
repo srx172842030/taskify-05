@@ -45,8 +45,14 @@ function connectStream() {
     try {
       const n = JSON.parse(e.data) as Notification
       prepend(n)
-      // 阻塞状态变化时刷新看板，使「被阻塞」标记实时更新
-      if (n.type === 'TASK_BLOCKED' || n.type === 'TASK_UNBLOCKED') {
+      // 任务类事件（创建/修改/移动/阻塞变化）时刷新当前项目任务，使两视图与跨用户视角实时同步
+      if (
+        n.type === 'TASK_CREATED' ||
+        n.type === 'TASK_UPDATED' ||
+        n.type === 'KANBAN_MOVED' ||
+        n.type === 'TASK_BLOCKED' ||
+        n.type === 'TASK_UNBLOCKED'
+      ) {
         void useTasks().reload()
       }
     } catch {

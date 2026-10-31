@@ -2,6 +2,8 @@ import { http, type PageResult } from './http'
 
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'
 
+export type Priority = 'HIGH' | 'MEDIUM' | 'LOW'
+
 export interface Task {
   id: string
   projectId: string
@@ -10,6 +12,7 @@ export interface Task {
   assigneeId: string | null
   status: TaskStatus
   createdBy: string
+  priority: Priority | null
   startAt: string | null
   startAllDay: boolean
   dueAt: string | null
@@ -24,6 +27,7 @@ export interface TaskPayload {
   title: string
   description?: string | null
   assigneeId?: string | null
+  priority?: Priority | null
   startAt?: string | null
   startAllDay?: boolean
   dueAt?: string | null
@@ -37,4 +41,6 @@ export const taskApi = {
   create: (projectId: string, d: TaskPayload) => http.post<Task>(`/projects/${projectId}/tasks`, d),
   update: (id: string, d: TaskPayload) => http.patch<Task>(`/tasks/${id}`, d),
   move: (id: string, toStatus: TaskStatus) => http.post<Task>(`/tasks/${id}/move`, { toStatus }),
+  batchUpdate: (projectId: string, d: { taskIds: string[]; patch: Record<string, unknown> }) =>
+    http.post<Task[]>(`/projects/${projectId}/tasks/batch-update`, d),
 }

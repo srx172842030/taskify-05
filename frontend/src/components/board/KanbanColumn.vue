@@ -1,21 +1,41 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import TaskCard from './TaskCard.vue'
+import KanbanSwimlane from './KanbanSwimlane.vue'
 import { useBoard } from '@/composables/useBoard'
+import { useSwimlane, type SwimlaneBy } from '@/composables/useSwimlane'
+import { sortTasks, type SortBy, type SortDir } from '@/composables/useTaskQuery'
+import { useUsers } from '@/stores/users'
 import { STATUS_LABELS } from '@/services/taskStatus'
 import type { Task, TaskStatus } from '@/services/taskApi'
 import { Card } from '@/components/ui/card'
 
-const props = defineProps<{ status: TaskStatus; tasks: Task[] }>()
+const props = defineProps<{
+  status: TaskStatus
+  tasks: Task[]
+  swimlaneBy: SwimlaneBy
+  sortBy: SortBy
+  sortDir: SortDir
+}>()
 const emit = defineEmits<{ open: [task: Task] }>()
 
 const { moveTask } = useBoard()
+const { byId } = useUsers()
 
 const items = ref<Task[]>([])
 
+const columnTasks = computed(() =>
+  sortTasks(
+    props.tasks.filter((t) => t.status === props.status),
+    props.sortBy,
+    props.sortDir,
+  ),
+)
+const { lanes } = useSwimlane(columnTasks, computed(() => props.swimlaneBy), (id) => byId.value[id] ?? id)
+
 watch(
-  () => props.tasks.filter((t) => t.status === props.status),
+  () => sortTasks(props.tasks.filter((t) => t.status === props.status), props.sortBy, props.sortDir),
   (v) => {
     items.value = v
   },
@@ -36,10 +56,24 @@ function onAdd(evt: { newIndex?: number }) {
   <Card class="flex flex-col rounded-lg border bg-muted/40 shadow-none">
     <header class="flex items-center justify-between px-3 py-2">
       <h3 class="text-sm font-semibold">{{ STATUS_LABELS[status] }}</h3>
-      <span class="text-xs text-muted-foreground">{{ items.length }}</span>
+      <span class="text-xs text-muted-foreground">{{ columnTasks.length }}</span>
     </header>
 
+    <!-- 泳道分组模式 -->
+    <div v-if="swimlaneBy" class="flex flex-1 flex-col gap-3 p-2">
+      <KanbanSwimlane
+        v-for="lane in lanes"
+        :key="lane.key"
+        :label="lane.label"
+        :tasks="lane.tasks"
+        :status="status"
+        @open="emit('open', $event)"
+      />
+    </div>
+
+    <!-- 普通平铺模式 -->
     <VueDraggable
+      v-else
       v-model="items"
       group="tasks"
       item-key="id"

@@ -31,4 +31,6 @@ public class Task extends BaseEntity {
     private OffsetDateTime dueAt;
 
     private Boolean dueAllDay;
+
+    private String priority;
 }

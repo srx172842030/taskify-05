@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { STATUS_ORDER } from '@/services/taskStatus'
 import type { Task } from '@/services/taskApi'
+import type { SwimlaneBy } from '@/composables/useSwimlane'
+import type { SortBy, SortDir } from '@/composables/useTaskQuery'
 import KanbanColumn from './KanbanColumn.vue'
 
-defineProps<{ tasks: Task[] }>()
+defineProps<{ tasks: Task[]; swimlaneBy: SwimlaneBy; sortBy: SortBy; sortDir: SortDir }>()
 const emit = defineEmits<{ open: [task: Task] }>()
 </script>
 
@@ -14,6 +16,9 @@ const emit = defineEmits<{ open: [task: Task] }>()
       :key="status"
       :status="status"
       :tasks="tasks"
+      :swimlane-by="swimlaneBy"
+      :sort-by="sortBy"
+      :sort-dir="sortDir"
       @open="emit('open', $event)"
     />
   </div>

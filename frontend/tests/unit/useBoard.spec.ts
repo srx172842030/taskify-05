@@ -21,6 +21,7 @@ const task: Task = {
   assigneeId: null,
   status: 'TODO',
   createdBy: 'u',
+  priority: null,
   startAt: null,
   startAllDay: false,
   dueAt: null,

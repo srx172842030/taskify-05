@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
-import type { Task, TaskStatus } from '@/services/taskApi'
+import type { Task, TaskStatus, Priority } from '@/services/taskApi'
 import { taskApi } from '@/services/taskApi'
 import { useTasks } from '@/stores/tasks'
 import { useUsers } from '@/stores/users'
@@ -34,6 +34,11 @@ const startAtInput = ref('')
 const startAllDay = ref(false)
 const dueAtInput = ref('')
 const dueAllDay = ref(false)
+const priority = ref('')
+const prioritySel = computed({
+  get: () => priority.value || 'none',
+  set: (v) => (priority.value = v === 'none' ? '' : v),
+})
 const saving = ref(false)
 const commentRefresh = ref(0)
 
@@ -53,6 +58,7 @@ watch(
     startAllDay.value = t?.startAllDay ?? false
     dueAtInput.value = toDatetimeLocal(t?.dueAt)
     dueAllDay.value = t?.dueAllDay ?? false
+    priority.value = t?.priority ?? ''
   },
   { immediate: true },
 )
@@ -69,6 +75,7 @@ async function save() {
       title: title.value.trim(),
       description: description.value || null,
       assigneeId: assigneeId.value || null,
+      priority: (priority.value || null) as Priority | null,
       startAt: fromDatetimeLocal(startAtInput.value),
       startAllDay: startAllDay.value,
       dueAt: fromDatetimeLocal(dueAtInput.value),
@@ -140,6 +147,21 @@ async function onMove(s: TaskStatus) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="u in users" :key="u.id" :value="u.id">{{ u.username }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div class="space-y-1">
+          <Label>优先级</Label>
+          <Select v-model="prioritySel">
+            <SelectTrigger>
+              <SelectValue placeholder="无优先级" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">无优先级</SelectItem>
+              <SelectItem value="HIGH">高</SelectItem>
+              <SelectItem value="MEDIUM">中</SelectItem>
+              <SelectItem value="LOW">低</SelectItem>
             </SelectContent>
           </Select>
         </div>
